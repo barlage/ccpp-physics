@@ -12,8 +12,8 @@
 !> \section arg_table_rrtmg_lw_pre_run Argument Table
 !! \htmlinclude rrtmg_lw_pre_run.html
 !!
-      subroutine rrtmg_lw_pre_run (im, lslwr, xlat, xlon, slmsk, snowd, sncovr,&
-        zorl, hprime, tsfg, tsfa, semis, emiss, errmsg, errflg)
+      subroutine rrtmg_lw_pre_run (im, lslwr, xlat, xlon, landfrac, snowd, sncovr,&
+        fice, zorl, hprime, tsfg, tsfa, semis, emiss, errmsg, errflg)
     
       use machine,                   only: kind_phys
       use module_radiation_surface,  only: setemis
@@ -22,8 +22,8 @@
       
       integer,                              intent(in)  :: im
       logical,                              intent(in)  :: lslwr
-      real(kind=kind_phys), dimension(im),  intent(in)  :: xlat, xlon, slmsk,  &
-        snowd, sncovr, zorl, hprime, tsfg, tsfa
+      real(kind=kind_phys), dimension(im),  intent(in)  :: xlat, xlon, landfrac,  &
+        snowd, sncovr, fice, zorl, hprime, tsfg, tsfa 
       real(kind=kind_phys), dimension(:),   intent(in)  :: emiss 
       real(kind=kind_phys), dimension(im),  intent(out) :: semis
       character(len=*),                     intent(out) :: errmsg
@@ -36,9 +36,9 @@
       if (lslwr) then
 !>  - Call module_radiation_surface::setemis(),to setup surface
 !! emissivity for LW radiation.
-        call setemis (xlon, xlat, slmsk, snowd, sncovr, zorl, tsfg, tsfa,      &
-                      hprime, emiss, im,                                       & !  ---  inputs
-                      semis)                              !  ---  outputs
+        call setemis (xlon, xlat, landfrac, snowd, sncovr, fice, zorl, tsfg, tsfa, &
+                      hprime, emiss, im,                                           & !  ---  inputs
+                      semis)                                                         !  ---  outputs
       endif
 
       end subroutine rrtmg_lw_pre_run
