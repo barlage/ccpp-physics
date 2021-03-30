@@ -414,10 +414,14 @@
 
             ! Composite inputs to "stability" function
             snwdph_cmp = txl*snwdph_lnd(i)  + txi*snwdph_ice(i)
-             tsurf_cmp = txl* tsurf_lnd(i)  + txi* tsurf_ice(i)         &
-     &                 + txo* tsurf_wat(i)
-             tskin_cmp = txl* tskin_lnd(i)  + txi* tskin_ice(i)         &
-     &                 + txo* tskin_wat(i)
+             tsurf_cmp = (txl * ch_lnd(i) * tsurf_lnd(i)                &
+     &                 +  txi * ch_ice(i) * tsurf_ice(i)                &
+     &                 +  txo * ch_wat(i) * tsurf_wat(i))               &
+     &         / (txl * ch_lnd(i) +  txi * ch_ice(i) +  txo * ch_wat(i))
+             tskin_cmp = (txl * ch_lnd(i) * tskin_lnd(i)                &
+     &                 +  txi * ch_ice(i) * tskin_ice(i)                &
+     &                 +  txo * ch_wat(i) * tskin_wat(i))               &
+     &         / (txl * ch_lnd(i) +  txi * ch_ice(i) +  txo * ch_wat(i))
 #ifdef GSD_SURFACE_FLUXES_BUGFIX
             tvs  = half * (tsurf_cmp+tskin_cmp)/prsik1(i)
      &                   * virtfac
