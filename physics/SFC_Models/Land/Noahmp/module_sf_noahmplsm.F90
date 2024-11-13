@@ -2511,7 +2511,21 @@ endif   ! croptype == 0
   real (kind=kind_phys), dimension(-nsnow+1:    0)              :: tksno   !snow thermal conductivity (j/m3/k)
   real (kind=kind_phys), dimension(       1:nsoil)              :: sice    !soil ice content
   real (kind=kind_phys), parameter :: sbeta = -2.0
+  real (kind=kind_phys), dimension(4,20)   :: soil_carbon                  ! soil carbon content [kg/m3]
+  real (kind=kind_phys), parameter         :: soil_carbon_df = 0.25        ! soil carbon therm cond (Lawrence and Slater)
+  real (kind=kind_phys), parameter         :: soil_carbon_hcpct = 2.5e6    ! soil carbon heat capacity (Lawrence and Slater)
+
 ! --------------------------------------------------------------------------------------------------
+
+! soil carbon [kg/m3] by vegetation type estimated from global PNNL soil carbon dataset 
+!   and VIIRS surface type
+
+  soil_carbon(1,:) = (/90,65,90,65,90,40,50,50,40,50,90,60,60,60,0,20,0,90,90,60/)
+  soil_carbon(2,:) = (/40,30,40,30,40,25,30,30,25,30,40,30,30,30,0,15,0,60,60,40/)
+  soil_carbon(3,:) = (/20,15,20,15,20,15,20,15,15,15,25,20,20,20,0,10,0,40,40,30/)
+  soil_carbon(4,:) = (/15,10,15,10,15,10,15,10,10,10,20,10,10,10,0,10,0,40,30,20/)
+
+  soil_carbon = soil_carbon / 130.0   ! convert to soil carbon relative to peat
 
 ! compute snow thermal conductivity and heat capacity
 
@@ -2530,6 +2544,12 @@ endif   ! croptype == 0
        hcpct(iz) = sh2o(iz)*cwat + (1.0-parameters%smcmax(iz))*parameters%csoil &
                 + (parameters%smcmax(iz)-smc(iz))*cpair + sice(iz)*cice
        call tdfcnd (parameters,iz,df(iz), smc(iz), sh2o(iz))
+
+       ! adjust for soil carbon organic content
+       
+       hcpct(iz) = (1.0 - soil_carbon(iz,vegtyp)) * hcpct(iz) + soil_carbon(iz,vegtyp) * soil_carbon_hcpct
+       df(iz)    = (1.0 - soil_carbon(iz,vegtyp)) * df(iz)    + soil_carbon(iz,vegtyp) * soil_carbon_df
+
     end do
        
     if ( parameters%urban_flag ) then
