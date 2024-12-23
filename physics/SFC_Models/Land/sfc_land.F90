@@ -32,11 +32,12 @@
    subroutine sfc_land_run(im, flag_init, flag_restart,              &
      cpllnd, cpllnd2atm, flag_iter, dry,                             &
      t1, q1, prsl1, prslki, ps, tskin, wind, cm, ch, rd, eps, epsm1, &
-     rvrdm1, hvap, cp, sncovr1_lnd, qsurf_lnd,                       &
+     rvrdm1, hvap, cp, con_sfc, sncovr1_lnd, qsurf_lnd,              &
      evap_lnd, hflx_lnd, ep_lnd, t2mmp_lnd, q2mp_lnd, gflux_lnd,     &
      runoff_lnd, drain_lnd, cmm_lnd, chh_lnd, zvfun_lnd,             &
      sncovr1, qsurf, evap, hflx, ep, t2mmp, q2mp,                    &
      gflux, runoff, drain, cmm, chh, zvfun,                          &
+     dlwflx, dswsfc, sfalb, sfcemis, slc,                            &
      errmsg, errflg)
 
    implicit none
@@ -64,6 +65,12 @@
    real(kind=kind_phys), intent(in) :: rvrdm1
    real(kind=kind_phys), intent(in) :: hvap
    real(kind=kind_phys), intent(in) :: cp
+   real(kind=kind_phys), intent(in) :: con_sbc
+   real(kind=kind_phys), intent(in) :: dlwflx(:)
+   real(kind=kind_phys), intent(in) :: dswsfc(:)
+   real(kind=kind_phys), intent(in) :: sfalb(:)
+   real(kind=kind_phys), intent(in) :: sfcemis(:)
+   real(kind=kind_phys), intent(in) :: slc(:,:)
    real(kind=kind_phys), intent(in), optional :: sncovr1_lnd(:)
    real(kind=kind_phys), intent(in), optional :: qsurf_lnd(:)
    real(kind=kind_phys), intent(in), optional :: evap_lnd(:)
@@ -99,11 +106,14 @@
    real(kind=kind_phys), parameter :: &
   &    one  = 1.0_kind_phys, &
   &    zero = 0.0_kind_phys, &
-  &    qmin = 1.0e-8_kind_phys
+  &    qmin = 1.0e-8_kind_phys, &
+  & slc_min = 0.05_kind_phys, &   ! estimate dry limit for soil moisture
+  & slc_max = 0.50_kind_phys      ! estimate saturated limit for soil moisture
 
    ! Locals
    integer :: i
    real(kind=kind_phys) :: qss, rch, tem, cpinv, hvapi, elocp
+   real(kind=kind_phys) :: available_energy, soil_stress_factor
    real(kind=kind_phys), dimension(im) :: rho, q0
 
    ! Initialize CCPP error handling variables
@@ -122,6 +132,12 @@
       ! Calculate fluxes internally
       do i = 1, im
          if (dry(i)) then
+            soil_stress_factor = (slc(i,1) - slc_min) / (slc_max - slc_min)
+            soil_stress_factor = min(max(zero,soil_stress_factor),one)
+            available_energy = dswsfc(i) * (one - sfalb) + dlwflx(i) * sfcemis(i) - &
+                               sfcemis(i) * con_sbc * tskin(i)^4
+            available_energy = min(max(-200.0,available_energy),1000.0)   ! set some arbitrary limits
+
             q0(i) = max(q1(i), qmin)
             rho(i) = prsl1(i)/(rd*t1(i)*(one+rvrdm1*q0(i)))
             qss = fpvs(tskin(i))
@@ -130,11 +146,26 @@
             tem = ch(i)*wind(i)
             sncovr1(i) = zero
             qsurf(i) = qss
-            hflx(i) = rch*(tskin(i)-t1(i)*prslki(i))
-            hflx(i) = hflx(i)*(1.0/rho(i))*cpinv
-            evap(i) = elocp*rch*(qss-q0(i))
+            hflx(i) = rch*(tskin(i)-t1(i)*prslki(i))   ! first guess hflx [W/m2]
+            evap(i) = elocp*rch*(qss-q0(i))            ! first guess evap [W/m2]
+            evap(i) = evap(i) * soil_stress_factor     ! reduce evap for soil moisture stress
+            hflx(i) = min(max(-100.0,hflx(i)),500.0)   ! set some arbitrary limits
+            evap(i) = min(max(-100.0,evap(i)),500.0)   ! set some arbitrary limits
+
+            if(evap(i) + hflx(i) /= zero) then
+              hflx(i) = available_energy * hflx(i) / (abs(evap(i)) + abs(hflx(i)))
+              evap(i) = available_energy * evap(i) / (abs(evap(i)) + abs(hflx(i)))
+            else
+              hflx(i) = 0.5 *available_energy
+              evap(i) = 0.5 *available_energy
+            end if
+            hflx(i) = min(max(-100.0,hflx(i)),500.0)   ! set some arbitrary limits
+            evap(i) = min(max(-100.0,evap(i)),500.0)   ! set some arbitrary limits
+
+            hflx(i) = hflx(i)*(1.0/rho(i))*cpinv       ! convert to expected units
             ep(i) = evap(i)
-            evap(i) = evap(i)*(1.0/rho(i))*hvapi
+            evap(i) = evap(i)*(1.0/rho(i))*hvapi       ! convert to expected units
+
             t2mmp(i) = tskin(i)
             q2mp(i) = qsurf(i)
             gflux(i) = zero
