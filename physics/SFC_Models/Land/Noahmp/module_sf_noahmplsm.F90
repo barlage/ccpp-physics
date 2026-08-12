@@ -5896,6 +5896,11 @@ zolmax = xkrefsqr / sqrt(xkzo)   ! maximum z/L
 
         z0h_out = z0m_out
 
+      elseif (opt_trs == chen09) then
+
+        czil = 0.55
+        z0h_out = z0m_out * exp(-czil*0.4*258.2*sqrt(ustarx*z0m_out))
+
       elseif (opt_trs == tessel) then
 
         if (vegtyp <= 5) then
@@ -5904,7 +5909,7 @@ zolmax = xkrefsqr / sqrt(xkzo)   ! maximum z/L
           z0h_out = z0m_out * 0.01
         endif
 
-      elseif (opt_trs == chen09 .or. opt_trs == blumel99) then
+      elseif (opt_trs == blumel99) then
 
         reyn = ustarx*z0m_out/viscosity                      ! Blumel99 eqn 36c
         if (reyn > 2.0) then
