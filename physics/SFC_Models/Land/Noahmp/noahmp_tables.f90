@@ -18,7 +18,7 @@ use machine ,   only : kind_phys
     integer, private, parameter :: max_soiltyp = 30
     integer, private, parameter :: ncrop = 5
     integer, private, parameter :: nstage = 8
-    integer, private, parameter :: num_slope = 9
+    integer, private, parameter :: num_slope = 20
 
 ! mptable.tbl vegetation parameters
 
