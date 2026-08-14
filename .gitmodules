@@ -14,5 +14,9 @@
   path = physics/CONV/C3
   url = https://github.com/ufs-community/c3
   branch = main
+[submodule "physics/SFC_Models/Land/Noahmp/noahmp"]
+  path = physics/SFC_Models/Land/Noahmp/noahmp
+  url = https://github.com/barlage/noahmp
+  branch = ccpp
 
 
