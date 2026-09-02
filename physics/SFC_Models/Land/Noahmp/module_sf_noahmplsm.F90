@@ -3952,6 +3952,7 @@ endif   ! croptype == 0
   real (kind=kind_phys) :: qfx          !moisture flux
   real (kind=kind_phys) :: e1           
   real (kind=kind_phys) :: hcv          !canopy heat capacity j/m2/k, C.He added 
+  real (kind=kind_phys) :: esurf        !surface vapor pressure
 
   real (kind=kind_phys) :: vaie         !total leaf area index + stem area index,effective
   real (kind=kind_phys) :: laisune      !sunlit leaf area index, one-sided (m2/m2),effective
@@ -4320,9 +4321,15 @@ endif   ! croptype == 0
             destg = dsati
         end if
 
+        esurf = estg*rhsur
+        if(estg > eah .and. eah > esurf) then
+          esurf = eah
+          destg = 0.0
+        end if
+
         irg = cir*tg**4 + air
         shg = csh * (tg         - tah         )
-        evg = cev * (estg*rhsur - eah         )
+        evg = cev * (esurf      - eah         )
         gh  = cgh * (tg         - stc(isnow+1))
 
         b = sag-irg-shg-evg-gh+pahg
@@ -4354,7 +4361,7 @@ endif   ! croptype == 0
         if(opt_stc == 3) tg  = (1.-fsno)*tg + fsno*tfrz   ! mb: allow tg>0c during melt v3.7
         irg = cir*tg**4 - emg*(1.-emv)*lwdn - emg*emv*sb*tv**4
         shg = csh * (tg         - tah)
-        evg = cev * (estg*rhsur - eah)
+!        evg = cev * (estg*rhsur - eah)
         gh  = sag+pahg - (irg+shg+evg)
      end if
      end if
@@ -4617,6 +4624,7 @@ endif   ! croptype == 0
   real (kind=kind_phys) :: esati      !es for ice
   real (kind=kind_phys) :: dsatw      !d(es)/dt at tg (pa/k) for water
   real (kind=kind_phys) :: dsati      !d(es)/dt at tg (pa/k) for ice
+  real (kind=kind_phys) :: esurf      !surface vapor pressure
 
   real (kind=kind_phys) :: a          !temporary calculation
   real (kind=kind_phys) :: b          !temporary calculation
@@ -4805,6 +4813,12 @@ endif   ! croptype == 0
             destg = dsati
         end if
 
+        esurf = estg*rhsur
+        if(estg > eair .and. eair > esurf) then
+          esurf = eair
+          destg = 0.0
+        end if
+
         csh = rhoair*cpair/rahb
         cev = rhoair*cpair/gamma/(rsurf+rawb)
 
@@ -4812,7 +4826,7 @@ endif   ! croptype == 0
 
         irb   = cir * tgb**4 - emg*lwdn
         shb   = csh * (tgb        - sfctmp      )
-        evb   = cev * (estg*rhsur - eair        )
+        evb   = cev * (esurf      - eair        )
         ghb   = cgh * (tgb        - stc(isnow+1))
 
         b     = sag-irb-shb-evb-ghb+pahb
@@ -4837,7 +4851,14 @@ endif   ! croptype == 0
         else
             estg  = esati
         end if
-        qsfc = ep_2*(estg*rhsur)/(psfc+epsm1*(estg*rhsur))
+
+        esurf = estg*rhsur
+        if(estg > eair .and. eair > esurf) then
+          esurf = eair
+          destg = 0.0
+        end if
+
+        qsfc = ep_2*esurf/(psfc+epsm1*esurf)
 
         qfx = (qsfc-qair)*cev*gamma/cpair
 
@@ -4852,7 +4873,7 @@ endif   ! croptype == 0
           if(opt_stc == 3) tgb  = (1.-fsno)*tgb + fsno*tfrz  ! mb: allow tg>0c during melt v3.7
           irb = cir * tgb**4 - emg*lwdn
           shb = csh * (tgb        - sfctmp)
-          evb = cev * (estg*rhsur - eair )          !estg reevaluate ?
+!          evb = cev * (estg*rhsur - eair )          !estg reevaluate ?
           ghb = sag+pahb - (irb+shb+evb)
      end if
      end if
