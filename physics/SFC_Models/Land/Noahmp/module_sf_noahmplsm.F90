@@ -2202,6 +2202,7 @@ endif   ! croptype == 0
        if(sh2o(1) < 0.01 .and. snowh == 0.) rsurf = 1.e6
        psi   = -parameters%psisat(1)*(max(0.01,sh2o(1))/parameters%smcmax(1))**(-parameters%bexp(1))   
        rhsur = fsno + (1.-fsno) * exp(psi*grav/(rw*tg)) 
+       rhsur = fsno + (1.-fsno) * max(0.0, min( ((sh2o(1)-parameters%smcwlt(1))/(parameters%smcmax(1)-parameters%smcwlt(1)))**0.5  , 1.0 ) )
      end if
 
 ! urban - jref 
