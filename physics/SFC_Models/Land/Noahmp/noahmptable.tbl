@@ -382,7 +382,7 @@
   bats_vis_dir  = 0.4   !cosz factor for direct visible snow albedo yang97 eqn. 15
   bats_nir_dir  = 0.4   !cosz factor for direct nir snow albedo yang97 eqn. 16
   rsurf_snow = 50.0     !surface resistence for snow [s/m]
-  rsurf_exp = 5.0       !exponent in the shape parameter for soil resistance option 1
+  rsurf_exp = 4.0       !exponent in the shape parameter for soil resistance option 1
   c2_snowcompact = 21.e-3 !overburden snow compaction parameter (m3/kg) cenlin
   c3_snowcompact = 2.5e-6 !snow desctructive metamorphism compaction parameter1 [1/s] cenlin 
   c4_snowcompact = 0.04   !snow desctructive metamorphism compaction parameter2 [1/k] cenlin
