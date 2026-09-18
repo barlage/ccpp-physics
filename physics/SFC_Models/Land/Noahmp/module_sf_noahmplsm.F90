@@ -4213,10 +4213,10 @@ endif   ! croptype == 0
         end if
 
         if (opt_crs == 2) then  ! jarvis
-         call  canres (parameters,ep_2, epsm1,parsun,tv    ,btran ,eah    ,sfcprs, & !in
+         call  canres (parameters,ep_2, epsm1,parsun,sfctmp,btran ,eah    ,sfcprs, & !in
                        rssun ,psnsun,iloc  ,jloc   )          !out
 
-         call  canres (parameters,ep_2, epsm1,parsha,tv    ,btran ,eah    ,sfcprs, & !in
+         call  canres (parameters,ep_2, epsm1,parsha,sfctmp,btran ,eah    ,sfcprs, & !in
                        rssha ,psnsha,iloc  ,jloc   )          !out
         end if
      end if
