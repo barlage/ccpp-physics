@@ -177,6 +177,10 @@ use machine ,   only : kind_phys
                       ! **1 -> use z0m from MPTABLE
                       !   2 -> z0m = f(canopy height, LAI/SAI) 
 
+  integer :: opt_rhsf !< options for surface relative humidity
+                      ! **1 -> psi-based from Philip (1957)
+                      !   2 -> soil wetness method 
+
 !------------------------------------------------------------------------------------------!
 ! physical constants:                                                                      !
 !------------------------------------------------------------------------------------------!
