@@ -709,6 +709,7 @@ end subroutine noahmpdrv_timestep_init
   integer    :: iopt_crop = 0 ! option for crop model
   integer    :: iopt_gla  = 2 ! option for glacier treatment
   integer    :: iopt_z0m  = 1 ! option for z0m treatment
+  integer    :: iopt_rhsf = 2 ! option for surface RH treatment
 
 !
 !  ---  local inputs to noah-mp and glacier subroutines; listed in order in noah-mp call
@@ -1113,7 +1114,7 @@ end subroutine noahmpdrv_timestep_init
                                  iopt_frz, iopt_inf , iopt_rad, iopt_alb,  &
                                  iopt_snf, iopt_tbot, iopt_stc, iopt_rsf,  &
                                  iopt_soil,iopt_pedo, iopt_crop,iopt_trs,  &
-                                 iopt_diag,iopt_z0m)
+                                 iopt_diag,iopt_z0m , iopt_rhsf)
 
       if ( vegetation_category == isice_table )  then
 

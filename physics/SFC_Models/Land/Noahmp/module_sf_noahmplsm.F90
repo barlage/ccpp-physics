@@ -2201,7 +2201,12 @@ endif   ! croptype == 0
 
        if(sh2o(1) < 0.01 .and. snowh == 0.) rsurf = 1.e6
        psi   = -parameters%psisat(1)*(max(0.01,sh2o(1))/parameters%smcmax(1))**(-parameters%bexp(1))   
-       rhsur = fsno + (1.-fsno) * max(0.0, min( ((sh2o(1)-parameters%smcwlt(1))/(parameters%smcmax(1)-parameters%smcwlt(1)))**0.5  , 1.0 ) )
+
+       if(opt_rhsf == 1) then
+         rhsur = fsno + (1.-fsno) * exp(psi*grav/(rw*tg)) 
+       elseif(opt_rhsf == 2) then
+         rhsur = fsno + (1.-fsno) * max(0.0, min( ((sh2o(1)-parameters%smcwlt(1))/(parameters%smcmax(1)-parameters%smcwlt(1)))**0.5  , 1.0 ) )
+       endif
      end if
 
 ! urban - jref 
@@ -10468,7 +10473,7 @@ end subroutine psn_crop
   subroutine noahmp_options(idveg    , iopt_crs , iopt_btr , iopt_run , iopt_sfc , iopt_frz , & 
                              iopt_inf, iopt_rad , iopt_alb , iopt_snf , iopt_tbot, iopt_stc , &
                              iopt_rsf, iopt_soil, iopt_pedo, iopt_crop, iopt_trs , iopt_diag, &
-                             iopt_z0m )
+                             iopt_z0m, iopt_rhsf )
 
   implicit none
 
@@ -10493,6 +10498,7 @@ end subroutine psn_crop
   integer,  intent(in) :: iopt_trs  !< thermal roughness scheme option (1->z0h=z0; 2->rb reversed)
   integer,  intent(in) :: iopt_diag !< surface 2m t/q diagnostic approach 
   integer,  intent(in) :: iopt_z0m  !< momentum roughness length option
+  integer,  intent(in) :: iopt_rhsf !< surface relative humidity option
 
 ! -------------------------------------------------------------------------------------------------
 
@@ -10516,6 +10522,7 @@ end subroutine psn_crop
   opt_trs  = iopt_trs
   opt_diag = iopt_diag
   opt_z0m  = iopt_z0m
+  opt_rhsf = iopt_rhsf
   
   end subroutine noahmp_options
 
